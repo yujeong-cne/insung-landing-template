@@ -12,3 +12,6 @@
 .photo{position:relative}.photo-stage-label{position:absolute;left:16px;top:16px;z-index:2;background:rgba(0,0,0,.76);color:#fff;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:900}
 .hero{min-height:460px;background-size:100% 100%,contain;background-position:center,center;background-repeat:no-repeat,no-repeat;background-color:#0b2033}.photo img,.step img,.ba-card img{object-fit:contain;background:#eef3f6}
 .why.brand-reasons{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.brand-reason-card{border-top:4px solid var(--blue)}.brand-reason-card span{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;background:var(--sky);font-size:25px}.brand-reason-notice{margin-top:18px;padding:14px 18px;border-radius:12px;background:#fff;color:#687783;font-size:12px}.brand-reason-notice p{margin:3px 0}
+
+/* 2026-10-22 — 휴대폰에서 STEP 표식(작업 전 상세 · 작업 완료)이 사진 위 광고 문구(서비스명)를 가렸다 → 좁은 화면에서는 표식을 사진 위가 아니라 사진 바로 위 줄에 */
+@media(max-width:600px){.ba-card{display:flex;flex-direction:column}.ba-card .ba-label{position:static;order:-1;align-self:flex-start;margin:0 0 10px}}
