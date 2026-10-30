@@ -13,81 +13,196 @@
   <meta property="og:url" content="https://service.insungclean.com/%EC%A7%80%EC%97%AD%EB%B3%84-%EC%84%9C%EB%B9%84%EC%8A%A4/">
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../assets/css/home.css">
+  <style>
+  /* ★ 이 한 줄이 없으면 자바스크립트가 꺼진 화면에 '검색창' 과 '전체 펼치기' 가
+     그대로 보인다 — 눌러도 아무 일이 없는 칸이 된다. 아래에서 `display:flex` 를
+     주는 순간 글쓴이 규칙이 브라우저 기본 `[hidden]{display:none}` 을 이긴다
+     (10-30 실제 화면에서 걸렸다). */
+  [hidden]{display:none!important}
+  .ri-main{padding:36px 0 80px}
+  .ri-head{margin-bottom:24px}
+  .ri-head .tag{color:var(--blue);font-weight:900}
+  .ri-head h1{font-size:clamp(26px,4vw,40px);line-height:1.25;margin:8px 0 10px;letter-spacing:-.04em}
+  .ri-head p{color:var(--muted);margin:0}
+  .ri-search{display:flex;gap:10px;margin-top:20px;max-width:660px}
+  .ri-search input{flex:1;min-width:0;min-height:52px;padding:0 16px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;color:inherit}
+  .ri-search input:focus-visible,.ri-search button:focus-visible,.ri-nav a:focus-visible,.ri-district>summary:focus-visible,.ri-picker>summary:focus-visible,.area-link:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+  .ri-search button{min-height:52px;padding:0 18px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;font-weight:800;cursor:pointer}
+  .ri-search button:hover{background:var(--sky);border-color:#8dbfe9}
+  .ri-layout{display:grid;grid-template-columns:252px minmax(0,1fr);gap:28px;align-items:start}
+  .ri-picker{border:1px solid var(--line);border-radius:18px;background:#fff;position:sticky;top:88px;box-shadow:0 10px 30px rgba(16,42,67,.06)}
+  .ri-picker>summary{display:none}
+  .ri-nav{display:grid;gap:4px;padding:10px;max-height:calc(100vh - 150px);overflow-y:auto;overscroll-behavior:contain}
+  .ri-nav a{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:0 14px;border-radius:12px;font-weight:800}
+  .ri-nav a span{color:var(--blue);font-size:13px;font-weight:700}
+  .ri-nav a:hover{background:var(--sky)}
+  .ri-nav a[aria-current]{background:var(--navy);color:#fff}
+  .ri-nav a[aria-current] span{color:#8fcbff}
+  .ri-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .ri-tools button{min-height:44px;padding:0 15px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-weight:800;cursor:pointer}
+  .ri-tools button:hover{background:var(--sky);border-color:#8dbfe9}
+  .ri-found{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .ri-empty{margin:0;padding:34px 20px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);text-align:center;font-weight:700}
+  .ri-region{margin:0 0 30px;scroll-margin-top:92px}
+  .ri-region>h2{font-size:24px;margin:0 0 14px;letter-spacing:-.03em}
+  .ri-region>h2 small{color:var(--blue);font-size:14px;font-weight:800;margin-left:8px}
+  .ri-district{border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px}
+  .ri-district>summary{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 16px;cursor:pointer;list-style:none}
+  .ri-district>summary::-webkit-details-marker{display:none}
+  .ri-district>summary::after{content:"\25be";color:var(--blue);font-weight:900;line-height:1}
+  .ri-district[open]>summary::after{content:"\25b4"}
+  .ri-district>summary h3{margin:0;font-size:17px;font-weight:800;word-break:keep-all}
+  .ri-district>summary .ri-count{color:var(--muted);font-size:13px;margin-left:auto}
+  .ri-district[open]>summary{border-bottom:1px solid var(--line)}
+  .ri-list{list-style:none;margin:0;padding:8px 10px 12px;display:grid;gap:4px}
+  .ri-list a{display:block;padding:12px 14px;border-radius:10px;background:#f7fafc;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}
+  .ri-list a:hover{background:var(--sky);color:var(--blue)}
+  .ri-region>.ri-list{padding:0;gap:6px}
+  .ri-hide{display:none!important}
+  @media(max-width:900px){
+    .ri-main{padding:26px 0 70px}
+    .ri-layout{grid-template-columns:1fr;gap:16px}
+    .ri-picker{position:static}
+    .ri-picker>summary{display:flex;align-items:center;gap:10px;min-height:54px;padding:0 16px;font-weight:900;cursor:pointer;list-style:none}
+    .ri-picker>summary::-webkit-details-marker{display:none}
+    .ri-picker>summary::after{content:"\25be";margin-left:auto;color:var(--blue);font-weight:900;line-height:1}
+    .ri-picker[open]>summary::after{content:"\25b4"}
+    .ri-nav{grid-template-columns:1fr 1fr;max-height:46vh;border-top:1px solid var(--line)}
+    .ri-search{max-width:none}
+  }
+  /* 좁은 화면에서도 검색창과 '초기화' 는 한 줄로 둔다 — 줄을 바꾸면 '초기화' 가
+     화면 너비를 다 차지해 목록이 그만큼 아래로 밀린다(휴대폰 화면에서 보았다). */
+  @media(max-width:480px){.ri-nav{grid-template-columns:1fr}.ri-search{gap:8px}.ri-search button{padding:0 14px;white-space:nowrap}}
+  </style>
 </head>
 <body>
   <header class="header"><div class="wrap">
     <a class="brand" href="../">인성클린<small>INSUNG CLEAN</small></a>
   </div></header>
-  <main class="section"><div class="wrap">
-    <div class="section-title"><span class="tag">지역별 안내</span>
-      <h1>지역별 서비스 안내</h1>
+  <main class="ri-main"><div class="wrap">
+    <div class="ri-head"><span class="tag">지역별 안내</span>
+      <h1>인성클린 지역별 서비스 안내</h1>
       <p>공개 중인 지역별 안내 페이지 181곳입니다. 지역을 고르면 그 지역의 작업 안내로 바로 갑니다.</p>
+      <form class="ri-search" id="ri-search" role="search" hidden>
+        <input type="search" id="ri-q" autocomplete="off" aria-label="지역명 또는 작업 종류 검색" placeholder="지역명 또는 작업 종류 검색 (예: 노원구 · 상계동 · 하수구막힘)">
+        <button type="button" id="ri-clear">초기화</button>
+      </form>
     </div>
-    <div class="area-list">
-      <a class="area-link" href="#seoul">서울<span>55곳</span></a>
-      <a class="area-link" href="#gyeonggi">경기<span>18곳</span></a>
-      <a class="area-link" href="#incheon">인천<span>9곳</span></a>
-      <a class="area-link" href="#busan">부산<span>9곳</span></a>
-      <a class="area-link" href="#daegu">대구<span>9곳</span></a>
-      <a class="area-link" href="#gwangju">광주<span>6곳</span></a>
-      <a class="area-link" href="#daejeon">대전<span>6곳</span></a>
-      <a class="area-link" href="#ulsan">울산<span>6곳</span></a>
-      <a class="area-link" href="#sejong">세종<span>3곳</span></a>
-      <a class="area-link" href="#gangwon">강원<span>6곳</span></a>
-      <a class="area-link" href="#chungbuk">충북<span>6곳</span></a>
-      <a class="area-link" href="#chungnam">충남<span>8곳</span></a>
-      <a class="area-link" href="#jeonbuk">전북<span>6곳</span></a>
-      <a class="area-link" href="#jeonnam">전남<span>6곳</span></a>
-      <a class="area-link" href="#gyeongbuk">경북<span>9곳</span></a>
-      <a class="area-link" href="#gyeongnam">경남<span>9곳</span></a>
-      <a class="area-link" href="#jeju">제주<span>6곳</span></a>
-      <a class="area-link" href="#etc">여러 지역<span>4곳</span></a>
-    </div>
-    <section class="section" id="seoul">
-      <h2>서울 <small>55곳</small></h2>
-      <h3>강남구</h3>
-      <ul>
+    <div class="ri-layout">
+      <details class="ri-picker" id="ri-picker" open>
+        <summary>지역 선택</summary>
+        <nav class="ri-nav" id="ri-nav" aria-label="지역 메뉴">
+          <a href="#ri-overview" data-go="">전국<span>181곳</span></a>
+          <a href="#seoul" data-go="seoul">서울<span>55곳</span></a>
+          <a href="#gyeonggi" data-go="gyeonggi">경기<span>18곳</span></a>
+          <a href="#incheon" data-go="incheon">인천<span>9곳</span></a>
+          <a href="#busan" data-go="busan">부산<span>9곳</span></a>
+          <a href="#daegu" data-go="daegu">대구<span>9곳</span></a>
+          <a href="#gwangju" data-go="gwangju">광주<span>6곳</span></a>
+          <a href="#daejeon" data-go="daejeon">대전<span>6곳</span></a>
+          <a href="#ulsan" data-go="ulsan">울산<span>6곳</span></a>
+          <a href="#sejong" data-go="sejong">세종<span>3곳</span></a>
+          <a href="#gangwon" data-go="gangwon">강원<span>6곳</span></a>
+          <a href="#chungbuk" data-go="chungbuk">충북<span>6곳</span></a>
+          <a href="#chungnam" data-go="chungnam">충남<span>8곳</span></a>
+          <a href="#jeonbuk" data-go="jeonbuk">전북<span>6곳</span></a>
+          <a href="#jeonnam" data-go="jeonnam">전남<span>6곳</span></a>
+          <a href="#gyeongbuk" data-go="gyeongbuk">경북<span>9곳</span></a>
+          <a href="#gyeongnam" data-go="gyeongnam">경남<span>9곳</span></a>
+          <a href="#jeju" data-go="jeju">제주<span>6곳</span></a>
+          <a href="#etc" data-go="etc">여러 지역<span>4곳</span></a>
+        </nav>
+      </details>
+      <div class="ri-panel">
+        <div class="ri-tools" id="ri-tools" hidden>
+          <button type="button" data-act="open">전체 펼치기</button>
+          <button type="button" data-act="close">전체 접기</button>
+        </div>
+        <p class="ri-found" id="ri-found" role="status" hidden></p>
+        <p class="ri-empty" id="ri-empty" hidden>검색 결과가 없습니다.</p>
+        <noscript><p class="ri-found" style="color:var(--muted)">지역명을 누르면 그 지역의 안내 페이지가 펼쳐집니다. 검색은 자바스크립트가 켜져 있을 때만 동작합니다.</p></noscript>
+        <div class="area-list" id="ri-overview">
+          <a class="area-link" href="#seoul" data-go="seoul">서울<span>55곳</span></a>
+          <a class="area-link" href="#gyeonggi" data-go="gyeonggi">경기<span>18곳</span></a>
+          <a class="area-link" href="#incheon" data-go="incheon">인천<span>9곳</span></a>
+          <a class="area-link" href="#busan" data-go="busan">부산<span>9곳</span></a>
+          <a class="area-link" href="#daegu" data-go="daegu">대구<span>9곳</span></a>
+          <a class="area-link" href="#gwangju" data-go="gwangju">광주<span>6곳</span></a>
+          <a class="area-link" href="#daejeon" data-go="daejeon">대전<span>6곳</span></a>
+          <a class="area-link" href="#ulsan" data-go="ulsan">울산<span>6곳</span></a>
+          <a class="area-link" href="#sejong" data-go="sejong">세종<span>3곳</span></a>
+          <a class="area-link" href="#gangwon" data-go="gangwon">강원<span>6곳</span></a>
+          <a class="area-link" href="#chungbuk" data-go="chungbuk">충북<span>6곳</span></a>
+          <a class="area-link" href="#chungnam" data-go="chungnam">충남<span>8곳</span></a>
+          <a class="area-link" href="#jeonbuk" data-go="jeonbuk">전북<span>6곳</span></a>
+          <a class="area-link" href="#jeonnam" data-go="jeonnam">전남<span>6곳</span></a>
+          <a class="area-link" href="#gyeongbuk" data-go="gyeongbuk">경북<span>9곳</span></a>
+          <a class="area-link" href="#gyeongnam" data-go="gyeongnam">경남<span>9곳</span></a>
+          <a class="area-link" href="#jeju" data-go="jeju">제주<span>6곳</span></a>
+          <a class="area-link" href="#etc" data-go="etc">여러 지역<span>4곳</span></a>
+        </div>
+        <section class="ri-region" id="seoul" data-sido="서울">
+          <h2>서울 <small>55곳</small></h2>
+          <details class="ri-district" data-name="강남구">
+            <summary><h3>강남구</h3><span class="ri-count">5곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EA%B0%9C%ED%8F%AC%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 강남구 개포동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EB%8C%80%EC%B9%98%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 강남구 대치동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%82%A8%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">서울 강남구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%82%A8%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 강남구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%82%A8%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 강남구 하수구막힘</a></li>
-      </ul>
-      <h3>강동구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="강동구">
+            <summary><h3>강동구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%8F%99%EA%B5%AC-%EC%95%94%EC%82%AC%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 강동구 암사동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%8F%99%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 강동구 하수구막힘</a></li>
-      </ul>
-      <h3>강북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="강북구">
+            <summary><h3>강북구</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%B6%81%EA%B5%AC-%EB%A7%A8%ED%99%80%EB%A7%89%ED%9E%98/">서울 강북구 맨홀막힘</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%B6%81%EA%B5%AC-%EC%86%A1%EC%A4%91%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 강북구 송중동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EB%B6%81%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 강북구 하수구막힘</a></li>
-      </ul>
-      <h3>강서구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="강서구">
+            <summary><h3>강서구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B0%95%EC%84%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 강서구 하수구막힘</a></li>
-      </ul>
-      <h3>관악구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="관악구">
+            <summary><h3>관악구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B4%80%EC%95%85%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 관악구 하수구막힘</a></li>
-      </ul>
-      <h3>광진구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="광진구">
+            <summary><h3>광진구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B4%91%EC%A7%84%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 광진구 하수구막힘</a></li>
-      </ul>
-      <h3>구로구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="구로구">
+            <summary><h3>구로구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B5%AC%EB%A1%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 구로구 하수구막힘</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EA%B5%AC%EB%A1%9C%EA%B5%AC-%ED%95%AD%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 구로구 항동 집수정청소</a></li>
-      </ul>
-      <h3>금천구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="금천구">
+            <summary><h3>금천구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B8%88%EC%B2%9C%EA%B5%AC-%EB%A7%A8%ED%99%80%EB%A7%89%ED%9E%98/">서울 금천구 맨홀막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EA%B8%88%EC%B2%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 금천구 하수구막힘</a></li>
-      </ul>
-      <h3>노원구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="노원구">
+            <summary><h3>노원구</h3><span class="ri-count">8곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%EA%B3%B5%EB%A6%89%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 노원구 공릉동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%EC%83%81%EA%B3%84%EB%8F%99-%EB%88%84%EC%88%98%ED%83%90%EC%A7%80/">서울 노원구 상계동 누수탐지</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%EC%83%81%EA%B3%84%EB%8F%99-%EB%A7%A8%ED%99%80%EB%A7%89%ED%9E%98/">서울 노원구 상계동 맨홀막힘</a></li>
@@ -96,496 +211,781 @@
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%EC%83%81%EA%B3%84%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 노원구 상계동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%EC%83%81%EA%B3%84%EB%8F%99-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 노원구 상계동 하수구막힘</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%85%B8%EC%9B%90%EA%B5%AC-%ED%95%98%EA%B3%84%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 노원구 하계동 집수정청소</a></li>
-      </ul>
-      <h3>도봉구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="도봉구">
+            <summary><h3>도봉구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EB%8F%84%EB%B4%89%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 도봉구 하수구막힘</a></li>
-      </ul>
-      <h3>동대문구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="동대문구">
+            <summary><h3>동대문구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC-%EB%8B%B5%EC%8B%AD%EB%A6%AC%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 동대문구 답십리동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 동대문구 하수구막힘</a></li>
-      </ul>
-      <h3>동작구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="동작구">
+            <summary><h3>동작구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EB%8F%99%EC%9E%91%EA%B5%AC-%EC%82%AC%EB%8B%B9%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 동작구 사당동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EB%8F%99%EC%9E%91%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 동작구 하수구막힘</a></li>
-      </ul>
-      <h3>마포구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="마포구">
+            <summary><h3>마포구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EB%A7%88%ED%8F%AC%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 마포구 하수구막힘</a></li>
-      </ul>
-      <h3>서대문구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서대문구">
+            <summary><h3>서대문구</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC-%EB%82%A8%EA%B0%80%EC%A2%8C%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 서대문구 남가좌동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC-%EC%B6%A9%ED%98%84%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 서대문구 충현동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 서대문구 하수구막힘</a></li>
-      </ul>
-      <h3>서초구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서초구">
+            <summary><h3>서초구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%84%9C%EC%B4%88%EA%B5%AC-%EC%84%9C%EC%B4%88%EB%8F%99-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 서초구 서초동 하수구막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%84%9C%EC%B4%88%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 서초구 싱크대막힘</a></li>
-      </ul>
-      <h3>성동구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="성동구">
+            <summary><h3>성동구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%84%B1%EB%8F%99%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 성동구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%84%B1%EB%8F%99%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 성동구 하수구막힘</a></li>
-      </ul>
-      <h3>성북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="성북구">
+            <summary><h3>성북구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%84%B1%EB%B6%81%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 성북구 싱크대막힘</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%84%B1%EB%B6%81%EA%B5%AC-%EC%A0%95%EB%A6%89%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 성북구 정릉동 집수정청소</a></li>
-      </ul>
-      <h3>송파구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="송파구">
+            <summary><h3>송파구</h3><span class="ri-count">4곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%86%A1%ED%8C%8C%EA%B5%AC-%EB%AC%B8%EC%A0%95%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 송파구 문정동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%86%A1%ED%8C%8C%EA%B5%AC-%EC%86%A1%ED%8C%8C%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 송파구 송파동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%86%A1%ED%8C%8C%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 송파구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%86%A1%ED%8C%8C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">서울 송파구 하수구막힘</a></li>
-      </ul>
-      <h3>양천구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="양천구">
+            <summary><h3>양천구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%96%91%EC%B2%9C%EA%B5%AC-%EB%AA%A9%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 양천구 목동 집수정청소</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%96%91%EC%B2%9C%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 양천구 싱크대막힘</a></li>
-      </ul>
-      <h3>영등포구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="영등포구">
+            <summary><h3>영등포구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%98%81%EB%93%B1%ED%8F%AC%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 영등포구 싱크대막힘</a></li>
-      </ul>
-      <h3>용산구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="용산구">
+            <summary><h3>용산구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%9A%A9%EC%82%B0%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 용산구 싱크대막힘</a></li>
-      </ul>
-      <h3>은평구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="은평구">
+            <summary><h3>은평구</h3><span class="ri-count">4곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%9D%80%ED%8F%89%EA%B5%AC-%EB%A7%A8%ED%99%80%EB%A7%89%ED%9E%98/">서울 은평구 맨홀막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%9D%80%ED%8F%89%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 은평구 싱크대막힘</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%9D%80%ED%8F%89%EA%B5%AC-%EC%97%AD%EC%B4%8C%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 은평구 역촌동 집수정청소</a></li>
         <li><a href="../pages/%EC%84%9C%EC%9A%B8-%EC%9D%80%ED%8F%89%EA%B5%AC-%EC%9D%91%EC%95%94%EB%8F%99-%EC%A7%91%EC%88%98%EC%A0%95%EC%B2%AD%EC%86%8C/">서울 은평구 응암동 집수정청소</a></li>
-      </ul>
-      <h3>종로구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="종로구">
+            <summary><h3>종로구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%A2%85%EB%A1%9C%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 종로구 싱크대막힘</a></li>
-      </ul>
-      <h3>중구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="중구">
+            <summary><h3>중구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%A4%91%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 중구 싱크대막힘</a></li>
-      </ul>
-      <h3>중랑구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="중랑구">
+            <summary><h3>중랑구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8%EC%A4%91%EB%9E%91%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울 중랑구 싱크대막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="gyeonggi">
-      <h2>경기 <small>18곳</small></h2>
-      <h3>고양시 덕양구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="gyeonggi" data-sido="경기">
+          <h2>경기 <small>18곳</small></h2>
+          <details class="ri-district" data-name="고양시 덕양구">
+            <summary><h3>고양시 덕양구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B3%A0%EC%96%91%EC%8B%9C%EB%8D%95%EC%96%91%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경기 고양시 덕양구 싱크대막힘</a></li>
-      </ul>
-      <h3>고양시 일산동구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="고양시 일산동구">
+            <summary><h3>고양시 일산동구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B3%A0%EC%96%91%EC%8B%9C%EC%9D%BC%EC%82%B0%EB%8F%99%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 고양시 일산동구 변기막힘</a></li>
-      </ul>
-      <h3>고양시 일산서구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="고양시 일산서구">
+            <summary><h3>고양시 일산서구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B3%A0%EC%96%91%EC%8B%9C%EC%9D%BC%EC%82%B0%EC%84%9C%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 고양시 일산서구 변기막힘</a></li>
-      </ul>
-      <h3>광명시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="광명시">
+            <summary><h3>광명시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B4%91%EB%AA%85%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 광명시 변기막힘</a></li>
-      </ul>
-      <h3>구리시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="구리시">
+            <summary><h3>구리시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B5%AC%EB%A6%AC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 구리시 변기막힘</a></li>
-      </ul>
-      <h3>김포시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="김포시">
+            <summary><h3>김포시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EA%B9%80%ED%8F%AC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 김포시 변기막힘</a></li>
-      </ul>
-      <h3>남양주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="남양주시">
+            <summary><h3>남양주시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EB%82%A8%EC%96%91%EC%A3%BC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 남양주시 변기막힘</a></li>
-      </ul>
-      <h3>부천시 소사구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="부천시 소사구">
+            <summary><h3>부천시 소사구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EB%B6%80%EC%B2%9C%EC%8B%9C%EC%86%8C%EC%82%AC%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 부천시 소사구 변기막힘</a></li>
-      </ul>
-      <h3>부천시 오정구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="부천시 오정구">
+            <summary><h3>부천시 오정구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EB%B6%80%EC%B2%9C%EC%8B%9C%EC%98%A4%EC%A0%95%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 부천시 오정구 변기막힘</a></li>
-      </ul>
-      <h3>부천시 원미구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="부천시 원미구">
+            <summary><h3>부천시 원미구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EB%B6%80%EC%B2%9C%EC%8B%9C%EC%9B%90%EB%AF%B8%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 부천시 원미구 변기막힘</a></li>
-      </ul>
-      <h3>성남시 분당구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="성남시 분당구">
+            <summary><h3>성남시 분당구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EC%84%B1%EB%82%A8%EC%8B%9C%EB%B6%84%EB%8B%B9%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 성남시 분당구 변기막힘</a></li>
-      </ul>
-      <h3>수원시 권선구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="수원시 권선구">
+            <summary><h3>수원시 권선구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EC%88%98%EC%9B%90%EC%8B%9C%EA%B6%8C%EC%84%A0%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경기 수원시 권선구 하수구막힘</a></li>
-      </ul>
-      <h3>용인시 수지구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="용인시 수지구">
+            <summary><h3>용인시 수지구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EC%9A%A9%EC%9D%B8%EC%8B%9C%EC%88%98%EC%A7%80%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경기 용인시 수지구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%EC%9A%A9%EC%9D%B8%EC%8B%9C%EC%88%98%EC%A7%80%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경기 용인시 수지구 하수구막힘</a></li>
-      </ul>
-      <h3>평택시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="평택시">
+            <summary><h3>평택시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%ED%8F%89%ED%83%9D%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 평택시 변기막힘</a></li>
-      </ul>
-      <h3>화성시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="화성시">
+            <summary><h3>화성시</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%ED%99%94%EC%84%B1%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경기 화성시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%ED%99%94%EC%84%B1%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경기 화성시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EA%B8%B0%ED%99%94%EC%84%B1%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경기 화성시 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="incheon">
-      <h2>인천 <small>9곳</small></h2>
-      <h3>남동구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="incheon" data-sido="인천">
+          <h2>인천 <small>9곳</small></h2>
+          <details class="ri-district" data-name="남동구">
+            <summary><h3>남동구</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%82%A8%EB%8F%99%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">인천 남동구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%82%A8%EB%8F%99%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">인천 남동구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%82%A8%EB%8F%99%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">인천 남동구 하수구막힘</a></li>
-      </ul>
-      <h3>미추홀구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="미추홀구">
+            <summary><h3>미추홀구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%AF%B8%EC%B6%94%ED%99%80%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">인천 미추홀구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%AF%B8%EC%B6%94%ED%99%80%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">인천 미추홀구 싱크대막힘</a></li>
-      </ul>
-      <h3>부평구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="부평구">
+            <summary><h3>부평구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%B6%80%ED%8F%89%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">인천 부평구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EB%B6%80%ED%8F%89%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">인천 부평구 하수구막힘</a></li>
-      </ul>
-      <h3>서구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서구">
+            <summary><h3>서구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EC%84%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">인천 서구 하수구막힘</a></li>
-      </ul>
-      <h3>연수구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="연수구">
+            <summary><h3>연수구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9D%B8%EC%B2%9C%EC%97%B0%EC%88%98%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">인천 연수구 변기막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="busan">
-      <h2>부산 <small>9곳</small></h2>
-      <h3>동래구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="busan" data-sido="부산">
+          <h2>부산 <small>9곳</small></h2>
+          <details class="ri-district" data-name="동래구">
+            <summary><h3>동래구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EB%8F%99%EB%9E%98%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">부산 동래구 변기막힘</a></li>
-      </ul>
-      <h3>부산진구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="부산진구">
+            <summary><h3>부산진구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">부산 부산진구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">부산 부산진구 하수구막힘</a></li>
-      </ul>
-      <h3>북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="북구">
+            <summary><h3>북구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EB%B6%81%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">부산 북구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EB%B6%81%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">부산 북구 싱크대막힘</a></li>
-      </ul>
-      <h3>사하구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="사하구">
+            <summary><h3>사하구</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EC%82%AC%ED%95%98%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">부산 사하구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EC%82%AC%ED%95%98%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">부산 사하구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%EC%82%AC%ED%95%98%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">부산 사하구 하수구막힘</a></li>
-      </ul>
-      <h3>해운대구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="해운대구">
+            <summary><h3>해운대구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%B6%80%EC%82%B0%ED%95%B4%EC%9A%B4%EB%8C%80%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">부산 해운대구 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="daegu">
-      <h2>대구 <small>9곳</small></h2>
-      <h3>달서구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="daegu" data-sido="대구">
+          <h2>대구 <small>9곳</small></h2>
+          <details class="ri-district" data-name="달서구">
+            <summary><h3>달서구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%8B%AC%EC%84%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">대구 달서구 하수구막힘</a></li>
-      </ul>
-      <h3>달성군</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="달성군">
+            <summary><h3>달성군</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%8B%AC%EC%84%B1%EA%B5%B0-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">대구 달성군 변기막힘</a></li>
-      </ul>
-      <h3>동구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="동구">
+            <summary><h3>동구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%8F%99%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">대구 동구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%8F%99%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">대구 동구 싱크대막힘</a></li>
-      </ul>
-      <h3>북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="북구">
+            <summary><h3>북구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%B6%81%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">대구 북구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EB%B6%81%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">대구 북구 하수구막힘</a></li>
-      </ul>
-      <h3>수성구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="수성구">
+            <summary><h3>수성구</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EC%88%98%EC%84%B1%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">대구 수성구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EC%88%98%EC%84%B1%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">대구 수성구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EA%B5%AC%EC%88%98%EC%84%B1%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">대구 수성구 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="gwangju">
-      <h2>광주 <small>6곳</small></h2>
-      <h3>광산구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="gwangju" data-sido="광주">
+          <h2>광주 <small>6곳</small></h2>
+          <details class="ri-district" data-name="광산구">
+            <summary><h3>광산구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EA%B4%91%EC%82%B0%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">광주 광산구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EA%B4%91%EC%82%B0%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">광주 광산구 하수구막힘</a></li>
-      </ul>
-      <h3>남구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="남구">
+            <summary><h3>남구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EB%82%A8%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">광주 남구 변기막힘</a></li>
-      </ul>
-      <h3>북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="북구">
+            <summary><h3>북구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EB%B6%81%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">광주 북구 하수구막힘</a></li>
-      </ul>
-      <h3>서구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서구">
+            <summary><h3>서구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EC%84%9C%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">광주 서구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B4%91%EC%A3%BC%EC%84%9C%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">광주 서구 싱크대막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="daejeon">
-      <h2>대전 <small>6곳</small></h2>
-      <h3>동구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="daejeon" data-sido="대전">
+          <h2>대전 <small>6곳</small></h2>
+          <details class="ri-district" data-name="동구">
+            <summary><h3>동구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EB%8F%99%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">대전 동구 변기막힘</a></li>
-      </ul>
-      <h3>서구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서구">
+            <summary><h3>서구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EC%84%9C%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">대전 서구 하수구막힘</a></li>
-      </ul>
-      <h3>유성구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="유성구">
+            <summary><h3>유성구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EC%9C%A0%EC%84%B1%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">대전 유성구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EC%9C%A0%EC%84%B1%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">대전 유성구 하수구막힘</a></li>
-      </ul>
-      <h3>중구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="중구">
+            <summary><h3>중구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EC%A4%91%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">대전 중구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EB%8C%80%EC%A0%84%EC%A4%91%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">대전 중구 싱크대막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="ulsan">
-      <h2>울산 <small>6곳</small></h2>
-      <h3>남구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="ulsan" data-sido="울산">
+          <h2>울산 <small>6곳</small></h2>
+          <details class="ri-district" data-name="남구">
+            <summary><h3>남구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EB%82%A8%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">울산 남구 하수구막힘</a></li>
-      </ul>
-      <h3>북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="북구">
+            <summary><h3>북구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EB%B6%81%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">울산 북구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EB%B6%81%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">울산 북구 싱크대막힘</a></li>
-      </ul>
-      <h3>울주군</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="울주군">
+            <summary><h3>울주군</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EC%9A%B8%EC%A3%BC%EA%B5%B0-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">울산 울주군 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EC%9A%B8%EC%A3%BC%EA%B5%B0-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">울산 울주군 하수구막힘</a></li>
-      </ul>
-      <h3>중구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="중구">
+            <summary><h3>중구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%9A%B8%EC%82%B0%EC%A4%91%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">울산 중구 변기막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="sejong">
-      <h2>세종 <small>3곳</small></h2>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="sejong" data-sido="세종">
+          <h2>세종 <small>3곳</small></h2>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%B8%EC%A2%85-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">세종 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%B8%EC%A2%85-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">세종 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%B8%EC%A2%85-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">세종 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="gangwon">
-      <h2>강원 <small>6곳</small></h2>
-      <h3>강릉시</h3>
-      <ul>
+            </ul>
+        </section>
+        <section class="ri-region" id="gangwon" data-sido="강원">
+          <h2>강원 <small>6곳</small></h2>
+          <details class="ri-district" data-name="강릉시">
+            <summary><h3>강릉시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EA%B0%95%EB%A6%89%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">강원 강릉시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EA%B0%95%EB%A6%89%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">강원 강릉시 싱크대막힘</a></li>
-      </ul>
-      <h3>동해시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="동해시">
+            <summary><h3>동해시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EB%8F%99%ED%95%B4%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">강원 동해시 변기막힘</a></li>
-      </ul>
-      <h3>원주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="원주시">
+            <summary><h3>원주시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EC%9B%90%EC%A3%BC%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">강원 원주시 하수구막힘</a></li>
-      </ul>
-      <h3>춘천시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="춘천시">
+            <summary><h3>춘천시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EC%B6%98%EC%B2%9C%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">강원 춘천시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B0%95%EC%9B%90%EC%B6%98%EC%B2%9C%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">강원 춘천시 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="chungbuk">
-      <h2>충북 <small>6곳</small></h2>
-      <h3>청주시 상당구</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="chungbuk" data-sido="충북">
+          <h2>충북 <small>6곳</small></h2>
+          <details class="ri-district" data-name="청주시 상당구">
+            <summary><h3>청주시 상당구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B2%AD%EC%A3%BC%EC%8B%9C%EC%83%81%EB%8B%B9%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">충북 청주시 상당구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B2%AD%EC%A3%BC%EC%8B%9C%EC%83%81%EB%8B%B9%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">충북 청주시 상당구 하수구막힘</a></li>
-      </ul>
-      <h3>청주시 서원구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="청주시 서원구">
+            <summary><h3>청주시 서원구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B2%AD%EC%A3%BC%EC%8B%9C%EC%84%9C%EC%9B%90%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">충북 청주시 서원구 변기막힘</a></li>
-      </ul>
-      <h3>청주시 흥덕구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="청주시 흥덕구">
+            <summary><h3>청주시 흥덕구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B2%AD%EC%A3%BC%EC%8B%9C%ED%9D%A5%EB%8D%95%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">충북 청주시 흥덕구 하수구막힘</a></li>
-      </ul>
-      <h3>충주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="충주시">
+            <summary><h3>충주시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B6%A9%EC%A3%BC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">충북 충주시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%B6%81%EC%B6%A9%EC%A3%BC%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">충북 충주시 싱크대막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="chungnam">
-      <h2>충남 <small>8곳</small></h2>
-      <h3>당진시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="chungnam" data-sido="충남">
+          <h2>충남 <small>8곳</small></h2>
+          <details class="ri-district" data-name="당진시">
+            <summary><h3>당진시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EB%8B%B9%EC%A7%84%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">충남 당진시 변기막힘</a></li>
-      </ul>
-      <h3>서산시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="서산시">
+            <summary><h3>서산시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%84%9C%EC%82%B0%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">충남 서산시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%84%9C%EC%82%B0%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">충남 서산시 싱크대막힘</a></li>
-      </ul>
-      <h3>아산시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="아산시">
+            <summary><h3>아산시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%95%84%EC%82%B0%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">충남 아산시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%95%84%EC%82%B0%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">충남 아산시 하수구막힘</a></li>
-      </ul>
-      <h3>천안시 동남구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="천안시 동남구">
+            <summary><h3>천안시 동남구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%B2%9C%EC%95%88%EC%8B%9C%EB%8F%99%EB%82%A8%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">충남 천안시 동남구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%B2%9C%EC%95%88%EC%8B%9C%EB%8F%99%EB%82%A8%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">충남 천안시 동남구 싱크대막힘</a></li>
-      </ul>
-      <h3>천안시 서북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="천안시 서북구">
+            <summary><h3>천안시 서북구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%B6%A9%EB%82%A8%EC%B2%9C%EC%95%88%EC%8B%9C%EC%84%9C%EB%B6%81%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">충남 천안시 서북구 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="jeonbuk">
-      <h2>전북 <small>6곳</small></h2>
-      <h3>군산시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="jeonbuk" data-sido="전북">
+          <h2>전북 <small>6곳</small></h2>
+          <details class="ri-district" data-name="군산시">
+            <summary><h3>군산시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EA%B5%B0%EC%82%B0%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">전북 군산시 변기막힘</a></li>
-      </ul>
-      <h3>익산시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="익산시">
+            <summary><h3>익산시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EC%9D%B5%EC%82%B0%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">전북 익산시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EC%9D%B5%EC%82%B0%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">전북 익산시 싱크대막힘</a></li>
-      </ul>
-      <h3>전주시 덕진구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="전주시 덕진구">
+            <summary><h3>전주시 덕진구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EC%A0%84%EC%A3%BC%EC%8B%9C%EB%8D%95%EC%A7%84%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">전북 전주시 덕진구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EC%A0%84%EC%A3%BC%EC%8B%9C%EB%8D%95%EC%A7%84%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">전북 전주시 덕진구 하수구막힘</a></li>
-      </ul>
-      <h3>전주시 완산구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="전주시 완산구">
+            <summary><h3>전주시 완산구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%B6%81%EC%A0%84%EC%A3%BC%EC%8B%9C%EC%99%84%EC%82%B0%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">전북 전주시 완산구 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="jeonnam">
-      <h2>전남 <small>6곳</small></h2>
-      <h3>광양시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="jeonnam" data-sido="전남">
+          <h2>전남 <small>6곳</small></h2>
+          <details class="ri-district" data-name="광양시">
+            <summary><h3>광양시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EA%B4%91%EC%96%91%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">전남 광양시 변기막힘</a></li>
-      </ul>
-      <h3>목포시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="목포시">
+            <summary><h3>목포시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EB%AA%A9%ED%8F%AC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">전남 목포시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EB%AA%A9%ED%8F%AC%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">전남 목포시 싱크대막힘</a></li>
-      </ul>
-      <h3>순천시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="순천시">
+            <summary><h3>순천시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EC%88%9C%EC%B2%9C%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">전남 순천시 하수구막힘</a></li>
-      </ul>
-      <h3>여수시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="여수시">
+            <summary><h3>여수시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EC%97%AC%EC%88%98%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">전남 여수시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%84%EB%82%A8%EC%97%AC%EC%88%98%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">전남 여수시 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="gyeongbuk">
-      <h2>경북 <small>9곳</small></h2>
-      <h3>경산시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="gyeongbuk" data-sido="경북">
+          <h2>경북 <small>9곳</small></h2>
+          <details class="ri-district" data-name="경산시">
+            <summary><h3>경산시</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B2%BD%EC%82%B0%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경북 경산시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B2%BD%EC%82%B0%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경북 경산시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B2%BD%EC%82%B0%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경북 경산시 하수구막힘</a></li>
-      </ul>
-      <h3>경주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="경주시">
+            <summary><h3>경주시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B2%BD%EC%A3%BC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경북 경주시 변기막힘</a></li>
-      </ul>
-      <h3>구미시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="구미시">
+            <summary><h3>구미시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B5%AC%EB%AF%B8%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경북 구미시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%EA%B5%AC%EB%AF%B8%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경북 구미시 하수구막힘</a></li>
-      </ul>
-      <h3>포항시 남구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="포항시 남구">
+            <summary><h3>포항시 남구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%ED%8F%AC%ED%95%AD%EC%8B%9C%EB%82%A8%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경북 포항시 남구 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%ED%8F%AC%ED%95%AD%EC%8B%9C%EB%82%A8%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경북 포항시 남구 싱크대막힘</a></li>
-      </ul>
-      <h3>포항시 북구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="포항시 북구">
+            <summary><h3>포항시 북구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%B6%81%ED%8F%AC%ED%95%AD%EC%8B%9C%EB%B6%81%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경북 포항시 북구 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="gyeongnam">
-      <h2>경남 <small>9곳</small></h2>
-      <h3>김해시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="gyeongnam" data-sido="경남">
+          <h2>경남 <small>9곳</small></h2>
+          <details class="ri-district" data-name="김해시">
+            <summary><h3>김해시</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EA%B9%80%ED%95%B4%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경남 김해시 하수구막힘</a></li>
-      </ul>
-      <h3>양산시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="양산시">
+            <summary><h3>양산시</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%96%91%EC%82%B0%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경남 양산시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%96%91%EC%82%B0%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경남 양산시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%96%91%EC%82%B0%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경남 양산시 하수구막힘</a></li>
-      </ul>
-      <h3>진주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="진주시">
+            <summary><h3>진주시</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%A7%84%EC%A3%BC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경남 진주시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%A7%84%EC%A3%BC%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경남 진주시 싱크대막힘</a></li>
-      </ul>
-      <h3>창원시 성산구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="창원시 성산구">
+            <summary><h3>창원시 성산구</h3><span class="ri-count">2곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%B0%BD%EC%9B%90%EC%8B%9C%EC%84%B1%EC%82%B0%EA%B5%AC-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">경남 창원시 성산구 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%B0%BD%EC%9B%90%EC%8B%9C%EC%84%B1%EC%82%B0%EA%B5%AC-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">경남 창원시 성산구 하수구막힘</a></li>
-      </ul>
-      <h3>창원시 의창구</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="창원시 의창구">
+            <summary><h3>창원시 의창구</h3><span class="ri-count">1곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EA%B2%BD%EB%82%A8%EC%B0%BD%EC%9B%90%EC%8B%9C%EC%9D%98%EC%B0%BD%EA%B5%AC-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">경남 창원시 의창구 변기막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="jeju">
-      <h2>제주 <small>6곳</small></h2>
-      <h3>서귀포시</h3>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="jeju" data-sido="제주">
+          <h2>제주 <small>6곳</small></h2>
+          <details class="ri-district" data-name="서귀포시">
+            <summary><h3>서귀포시</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%84%9C%EA%B7%80%ED%8F%AC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">제주 서귀포시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%84%9C%EA%B7%80%ED%8F%AC%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">제주 서귀포시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%84%9C%EA%B7%80%ED%8F%AC%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">제주 서귀포시 하수구막힘</a></li>
-      </ul>
-      <h3>제주시</h3>
-      <ul>
+            </ul>
+          </details>
+          <details class="ri-district" data-name="제주시">
+            <summary><h3>제주시</h3><span class="ri-count">3곳</span></summary>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%A0%9C%EC%A3%BC%EC%8B%9C-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">제주 제주시 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%A0%9C%EC%A3%BC%EC%8B%9C-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">제주 제주시 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%A0%9C%EC%A3%BC%EC%A0%9C%EC%A3%BC%EC%8B%9C-%ED%95%98%EC%88%98%EA%B5%AC%EB%A7%89%ED%9E%98/">제주 제주시 하수구막힘</a></li>
-      </ul>
-    </section>
-    <section class="section" id="etc">
-      <h2>여러 지역 <small>4곳</small></h2>
-      <ul>
+            </ul>
+          </details>
+        </section>
+        <section class="ri-region" id="etc" data-sido="여러 지역">
+          <h2>여러 지역 <small>4곳</small></h2>
+            <ul class="ri-list">
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8-%EC%99%B832%EA%B3%B3-b6fbbfea-%EB%88%84%EC%88%98%ED%83%90%EC%A7%80/">서울·경기 일부·인천 일부 누수탐지</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8-%EC%99%B832%EA%B3%B3-b6fbbfea-%EB%B3%80%EA%B8%B0%EB%A7%89%ED%9E%98/">서울·경기 일부·인천 일부 변기막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8-%EC%99%B832%EA%B3%B3-b6fbbfea-%EC%8B%B1%ED%81%AC%EB%8C%80%EB%A7%89%ED%9E%98/">서울·경기 일부·인천 일부 싱크대막힘</a></li>
         <li><a href="../pages/%EB%B3%B5%EC%88%98%EC%A7%80%EC%97%AD-%EC%84%9C%EC%9A%B8-%EA%B2%BD%EA%B8%B0-%EC%9D%B8%EC%B2%9C-%EB%A7%A8%ED%99%80%EB%A7%89%ED%9E%98/">서울·경기·인천 맨홀막힘</a></li>
-      </ul>
-    </section>
+            </ul>
+        </section>
+      </div>
+    </div>
   </div></main>
   <footer class="footer"><div class="wrap">
     <a class="brand brand-white" href="../">인성클린<small>INSUNG CLEAN</small></a>
     <p>대표전화 1877-1123 · 직통전화 010-4943-0491</p>
   </div></footer>
+  <script>
+  (function(){
+    var picker=document.getElementById('ri-picker'), nav=document.getElementById('ri-nav');
+    var overview=document.getElementById('ri-overview'), tools=document.getElementById('ri-tools');
+    var form=document.getElementById('ri-search'), input=document.getElementById('ri-q');
+    var found=document.getElementById('ri-found'), empty=document.getElementById('ri-empty');
+    if(!picker||!nav||!tools||!form||!input) return;
+    var regions=[].slice.call(document.querySelectorAll('.ri-region'));
+    var districts=[].slice.call(document.querySelectorAll('.ri-district'));
+    var items=[].slice.call(document.querySelectorAll('.ri-list a')).map(function(a){
+      var box=a.closest('.ri-district'), sec=a.closest('.ri-region');
+      var words=[a.textContent||''];
+      if(box){words.push(box.getAttribute('data-name')||'');}
+      if(sec){words.push(sec.getAttribute('data-sido')||'');}
+      return {row:a.parentNode, hay:words.join(' ').toLowerCase()};
+    });
+    var narrow=function(){return window.matchMedia('(max-width:900px)').matches;};
+    var show=function(el,on){ if(el){el.classList.toggle('ri-hide', !on);} };
+    var current='';
+    // 곳수 — 검색 중에는 '보이는 수' 로 바꾼다. 하나만 남았는데 '56곳' 이 붙어
+    // 있으면 무엇이 56곳인지 읽는 사람이 알 수 없다(휴대폰 화면에서 보았다).
+    var counters=[].slice.call(document.querySelectorAll('.ri-region>h2 small, .ri-district .ri-count'));
+    counters.forEach(function(el){ el.setAttribute('data-full', el.textContent); });
+    function recount(box){
+      var el=box.querySelector(':scope>h2 small') || box.querySelector(':scope>summary .ri-count');
+      if(el){ el.textContent=box.querySelectorAll('li:not(.ri-hide)').length+'곳'; }
+    }
+    function mark(){
+      [].forEach.call(nav.querySelectorAll('a[data-go]'), function(a){
+        if(a.getAttribute('data-go')===current){a.setAttribute('aria-current','true');}
+        else{a.removeAttribute('aria-current');}
+      });
+    }
+    function apply(){
+      found.hidden=true; empty.hidden=true;
+      items.forEach(function(it){ show(it.row,true); });
+      // 검색이 펼쳐 놓은 묶음을 그대로 두면 지역을 바꿔도 긴 목록이 남는다
+      // (10-30 실제 화면에서 걸렸다 — 초기화한 뒤에도 노원구가 펼쳐져 있었다).
+      districts.forEach(function(d){ show(d,true); d.open=false; });
+      counters.forEach(function(el){ el.textContent=el.getAttribute('data-full'); });
+      regions.forEach(function(s){ show(s, current ? s.id===current : false); });
+      show(overview, !current);
+      tools.hidden = !current;
+      mark();
+    }
+    function select(target){
+      current=target; input.value=''; apply();
+      if(narrow()){ picker.open=false; }
+      var anchor = target ? document.getElementById(target) : overview;
+      if(anchor){
+        var top=anchor.getBoundingClientRect().top;
+        if(top<0 || top>window.innerHeight*0.85){ anchor.scrollIntoView({block:'start'}); }
+      }
+      try{ history.replaceState(null,'', target ? '#'+target : location.pathname); }catch(e){}
+    }
+    function pick(event){
+      var link=event.target.closest ? event.target.closest('a[data-go]') : null;
+      if(!link){ return; }
+      event.preventDefault(); select(link.getAttribute('data-go')||'');
+    }
+    nav.addEventListener('click', pick);
+    if(overview){ overview.addEventListener('click', pick); }
+    function search(){
+      var raw=(input.value||'').trim();
+      if(!raw){ apply(); return; }
+      var words=raw.toLowerCase().split(/\s+/), hits=0;
+      items.forEach(function(it){
+        var ok=words.every(function(word){ return it.hay.indexOf(word)>=0; });
+        show(it.row, ok); if(ok){ hits++; }
+      });
+      districts.forEach(function(d){
+        var any=!!d.querySelector('li:not(.ri-hide)');
+        show(d, any); if(any){ d.open=true; recount(d); }
+      });
+      regions.forEach(function(s){
+        var any=!!s.querySelector('li:not(.ri-hide)');
+        show(s, any); if(any){ recount(s); }
+      });
+      show(overview,false); tools.hidden=false;
+      found.hidden=false; found.textContent='\u2018'+raw+'\u2019 검색 결과 '+hits+'곳';
+      empty.hidden=hits>0;
+      [].forEach.call(nav.querySelectorAll('a[data-go]'), function(a){ a.removeAttribute('aria-current'); });
+    }
+    input.addEventListener('input', search);
+    form.addEventListener('submit', function(e){ e.preventDefault(); search(); });
+    var reset=document.getElementById('ri-clear');
+    if(reset){ reset.addEventListener('click', function(){ input.value=''; apply(); input.focus(); }); }
+    tools.addEventListener('click', function(e){
+      var button=e.target.closest ? e.target.closest('button[data-act]') : null;
+      if(!button){ return; }
+      var open=button.getAttribute('data-act')==='open';
+      districts.forEach(function(d){ if(!d.classList.contains('ri-hide')){ d.open=open; } });
+    });
+    var hash=(location.hash||'').replace('#','');
+    try{ hash=decodeURIComponent(hash); }catch(e){}
+    current = regions.some(function(s){ return s.id===hash; }) ? hash : '';
+    form.hidden=false; apply();
+    if(narrow()){ picker.open=false; }
+  })();
+  </script>
 </body>
 </html>
